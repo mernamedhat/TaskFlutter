@@ -7,25 +7,25 @@ import 'package:blinkid_flutter/overlays/blinkid_overlays.dart';
 import 'package:blinkid_flutter/recognizers/blink_id_combined_recognizer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/drive/v3.dart';
+
 
 import 'Components/costumAlert.dart';
 import 'ReadID/UAEIDProvider/uaeIDProvider.dart';
 import 'controller.dart';
 import 'form.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
+
 import 'package:http/http.dart' as http;
 
+
+import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:google_sign_in/google_sign_in.dart';
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  // String frontImage = "";
-  //
-  // //File frontImage= File('/path/to/file');
-  // File backImage = File('/path/to/file');
+
   bool isScan = false;
 
   final _formKey = GlobalKey<FormState>();
@@ -38,27 +38,26 @@ class _HomePageState extends State<HomePage> {
   TextEditingController mobileController = TextEditingController();
   TextEditingController nationalIdController = TextEditingController();
 
-  // Future<void> scanFrontID() async {
-  //   final pickedFile =
-  //       await ImagePicker().pickImage(source: ImageSource.camera);
-  //   if (pickedFile != null) {
-  //     setState(() {
-  //       // frontImage = File(pickedFile.path);
-  //       frontImage = " ";
-  //     });
-  //   }
-  // }
 
-  // Future<void> scanBackID() async {
-  //   final pickedFile =
-  //       await ImagePicker().pickImage(source: ImageSource.camera);
-  //   if (pickedFile != null) {
-  //     setState(() {
-  //       backImage = File(pickedFile.path);
-  //     });
-  //   }
-  // }
 
+
+
+  void saveBase64ToDrive(String fileName, List<int> bytes) async {
+
+
+    final googleSignIn = GoogleSignIn(scopes: ['https://www.googleapis.com/auth/drive.file']);
+    final account = await googleSignIn.signIn();
+
+    final authHeaders = await account?.authHeaders;
+    final driveApi = drive.DriveApi(authHeaders as http.Client);
+    final media = drive.Media(Stream.fromIterable(bytes as Iterable<List<int>>), bytes.length);
+    final file = drive.File()
+      ..name = fileName
+      ..parents = ['parent-folder-id'];
+
+    await driveApi.files.create(file, uploadMedia: media);
+
+  }
   // newypdate
   Future<void> scan() async {
     String license;
@@ -182,7 +181,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> submitData() async {
 
-
+    saveBase64ToDrive("merna",Base64Decoder().convert(UAEIdProvider.fullDocumentFrontImageBase64),);
     if (_formKey.currentState!.validate()) {
       UserForm userForm = UserForm(
         firstNameController.text,
@@ -296,14 +295,18 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(height: 16),
                 TextField(
+                  keyboardType: TextInputType.name,
                   controller: firstNameController,
+
                   decoration: InputDecoration(labelText: 'First Name'),
                 ),
                 TextField(
+                  keyboardType: TextInputType.name,
                   controller: lastNameController,
                   decoration: InputDecoration(labelText: 'Last Name'),
                 ),
                 TextField(
+                  keyboardType: TextInputType.streetAddress,
                   controller: addressController,
                   decoration: InputDecoration(labelText: 'Address'),
                 ),
@@ -337,19 +340,24 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (String? newValue) {
                     setState(() {
                       dropdownValue = newValue!;
-                      areaController.text = newValue;
+                      newValue!=""?
+                      areaController.text = newValue:areaController.text=dropdownValue;
                     });
                   },
                 ),
                 TextField(
+                  keyboardType: TextInputType.phone,
                   controller: landlineController,
                   decoration: InputDecoration(labelText: 'Landline'),
                 ),
                 TextField(
+                  keyboardType: TextInputType.phone,
                   controller: mobileController,
                   decoration: InputDecoration(labelText: 'Mobile'),
                 ),
                 TextField(
+                  keyboardType: TextInputType.number,
+                  maxLength: 13,
                   controller: nationalIdController,
                   decoration: InputDecoration(labelText: 'National ID'),
                 ),
