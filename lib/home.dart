@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:blinkid_flutter/microblink_scanner.dart';
 import 'package:blinkid_flutter/overlays/blinkid_overlays.dart';
 import 'package:blinkid_flutter/recognizers/blink_id_combined_recognizer.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -38,26 +40,42 @@ class _HomePageState extends State<HomePage> {
   TextEditingController mobileController = TextEditingController();
   TextEditingController nationalIdController = TextEditingController();
 
-
-
-
-
-  void saveBase64ToDrive(String fileName, List<int> bytes) async {
-
-
-    final googleSignIn = GoogleSignIn(scopes: ['https://www.googleapis.com/auth/drive.file']);
-    final account = await googleSignIn.signIn();
-
-    final authHeaders = await account?.authHeaders;
-    final driveApi = drive.DriveApi(authHeaders as http.Client);
-    final media = drive.Media(Stream.fromIterable(bytes as Iterable<List<int>>), bytes.length);
-    final file = drive.File()
-      ..name = fileName
-      ..parents = ['parent-folder-id'];
-
-    await driveApi.files.create(file, uploadMedia: media);
-
+  @override
+  void initState() {
+    super.initState();
+    Firebase.initializeApp();
   }
+
+  // Uint8List decodeBase64ToBytes(String encodedImage) {
+  //   return base64.decode(encodedImage);
+  // }
+  //
+  // Image decodeBytesToImage(Uint8List bytes) {
+  //   return Image.memory(bytes);
+  // }
+  //
+  // void saveBase64ToDrive(String fileName, List<int> bytes) async {
+  //   // final controller = ScreenshotController();
+  //   // final bytes = await controller .captureFromWidget(ResultWidget());
+  //   final base64String = base64.encode(bytes);
+  //
+  //   final storageRef = FirebaseStorage.instance.ref().child('images/image1.png');
+  //   await storageRef.putString(base64String, format: PutStringFormat.base64, metadata: SettableMetadata(contentType: 'image/png')).then((p0) => print('uploaded to firebase storage successfully'));
+  //   String downloadUrl = (await FirebaseStorage.instance .ref().child('images/image1.png').getDownloadURL()).toString();
+  //
+  //   // final googleSignIn = GoogleSignIn(scopes: ['https://www.googleapis.com/auth/drive.file']);
+  //   // final account = await googleSignIn.signIn();
+  //   //
+  //   // final authHeaders = await account?.authHeaders;
+  //   // final driveApi = drive.DriveApi(authHeaders as http.Client);
+  //   // final media = drive.Media(Stream.fromIterable(bytes as Iterable<List<int>>), bytes.length);
+  //   // final file = drive.File()
+  //   //   ..name = fileName
+  //   //   ..parents = ['parent-folder-id'];
+  //   //
+  //   // await driveApi.files.create(file, uploadMedia: media);
+  //
+  // }
   // newypdate
   Future<void> scan() async {
     String license;
