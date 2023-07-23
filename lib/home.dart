@@ -1,33 +1,25 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:blinkid_flutter/microblink_scanner.dart';
-import 'package:blinkid_flutter/overlays/blinkid_overlays.dart';
-import 'package:blinkid_flutter/recognizers/blink_id_combined_recognizer.dart';
+
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 
-
 import 'Components/costumAlert.dart';
+
 import 'ReadID/UAEIDProvider/uaeIDProvider.dart';
 import 'controller.dart';
 import 'form.dart';
-
-import 'package:http/http.dart' as http;
-
-
+import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:google_sign_in/google_sign_in.dart';
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
   bool isScan = false;
 
   final _formKey = GlobalKey<FormState>();
@@ -46,37 +38,49 @@ class _HomePageState extends State<HomePage> {
     Firebase.initializeApp();
   }
 
-  // Uint8List decodeBase64ToBytes(String encodedImage) {
-  //   return base64.decode(encodedImage);
-  // }
-  //
-  // Image decodeBytesToImage(Uint8List bytes) {
-  //   return Image.memory(bytes);
-  // }
-  //
-  // void saveBase64ToDrive(String fileName, List<int> bytes) async {
-  //   // final controller = ScreenshotController();
-  //   // final bytes = await controller .captureFromWidget(ResultWidget());
-  //   final base64String = base64.encode(bytes);
-  //
-  //   final storageRef = FirebaseStorage.instance.ref().child('images/image1.png');
-  //   await storageRef.putString(base64String, format: PutStringFormat.base64, metadata: SettableMetadata(contentType: 'image/png')).then((p0) => print('uploaded to firebase storage successfully'));
-  //   String downloadUrl = (await FirebaseStorage.instance .ref().child('images/image1.png').getDownloadURL()).toString();
-  //
-  //   // final googleSignIn = GoogleSignIn(scopes: ['https://www.googleapis.com/auth/drive.file']);
-  //   // final account = await googleSignIn.signIn();
-  //   //
-  //   // final authHeaders = await account?.authHeaders;
-  //   // final driveApi = drive.DriveApi(authHeaders as http.Client);
-  //   // final media = drive.Media(Stream.fromIterable(bytes as Iterable<List<int>>), bytes.length);
-  //   // final file = drive.File()
-  //   //   ..name = fileName
-  //   //   ..parents = ['parent-folder-id'];
-  //   //
-  //   // await driveApi.files.create(file, uploadMedia: media);
-  //
-  // }
-  // newypdate
+  var email = "taskflutter@taskflutter-392707.iam.gserviceaccount.com";
+  var clientId = "AIzaSyApFxW-Q7Nao3fc_r2r2bCp7cajnlkyE6s";
+  var privateKey = "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPeE7CaVIMFwGx\nyjpLjIVjPUdS/MweBDFqF0M54bDkQPZKyZH/ej+lmKzVYaqj9OKtBJ6LQ7Zw3Fwj\nChGpdGw0HnmgDFk3yEOut8547J4MAgAxJU7zB0cl9N9ZuYmCmVGnocmOBIG5M+jc\nLF77JD19x3acKmpH6Wxb/k5PlM5LkOiliPTtj7swXxW+xQjUTqee9ZW29RrrGFe+\n+zSi5f4IMBkIS/IpiQ96bzSrQ4yYABrRBZugEZgalVJOXTRnwgZvyBMQWaXd/dmG\n0dk1CB9xstvtTHasuPym7CZ9m0TJ/fWmVL1ZQSqoa/nc12DzeMLPGRJZD0QBESlc\nmI6rb9GXAgMBAAECggEAFeYPfiLKx77n7WG4nH/VFoAB1scbLnHn21hgPqxNVRJs\nTMGQ+QPo0uxWFeHMtqijAnsx1uZLTAdebE5kRdwljazHzrZu9l3bkwYQs5/aIM9X\nQNi8yBc1EdMSfjCAzLmtLkH7+dMM9ET/57mBPwX4vZ1/rgUmGbgQOXeSwYCl88DD\nqYqg3iGYtIUlGhobd+jKhzh07B/wHAsOcQ/0k2tl3hI6hxZ2ENtFWAxX/ncsDUzY\nEx32Aq42yiIhHwefBbQw4K7p6uHMiW+1gJS8cgPuM3/n9znGM1g/Ywv2wzZSebnK\nPpbBvTdfxLlZOHzKGL2qz7HyX9XRifw8XMVzEYm8sQKBgQD0Wyx5XyANaTkvBaQ/\nsu66b6sZQQ3WmBkHtElPfzhIgPpFob5BVaHJdlprq0VOkbilqUSHjpcGDpPwj6f+\nsdE5B9Iawhzbb7T62OvthUAWaimWJjxxC5tex25h2eKAQoywSThMgwj81rk/i1CW\nGMCjjtlBo/ocwTBwlpugQZ6wsQKBgQDZWyuiz9R5nIVW3ZKjDIejUTDCt2l4LCuT\nBWgYycBGuoSJik2f+j/TQxkhycoUViU2NPIzhP1bPorRjrfyShL50eJe5fErMmpw\nIHu59SgeEiKKcLcKO36pGAtdwH30p9nt9M4e3bDXwR1LD6vQvMnwdcCxDjCUofmK\nfsFfnrn4xwKBgQCvzbTmscDOxUimAwoT5jmJmvPfnIVHQnCnsVcZQe+NgnYNiPvn\n56MZ3fPaCQQ5LfBKB8lNOhKAAhb/+WslfGuJ+413QPcgDXOJEm5Tmg3s0n6PD31m\n27Hx88v/zJIAM2EjJ9rAeXoK5rWq+SGGi9J1Gj5G0qIM9BVUu5bGKs/wUQKBgQDW\nN/vev/SKUxA7l68hEYVRGgDzt660KNxdT1PUMmtVihh8MhnlVM+42IWZfnay6mBM\nd4xJ6IWHezF37bAvlH/1Rb1UiE3TpCGxFuK6WPvL/1WZmhNce1yPLUpugPvit9ea\npc7MLvRPAF5tjyloVdi1LGjYV8LbinQV4m2VXyutGwKBgGqOk59ZnRr4fI+O4UjJ\n65nNKtn5iPoDjrLfqo933/282eWCgNNWfEQGRPp5lk+sxUVBFYLNyqNIM3z1RUKF\nXJMs68nthqMUWGMPvcNI+lCZin05BVbTKYJx9tdkFhC34gOfkScHtyWYMnW+og4H\nEE9c9pNC2h44FIMy9hogO9mm\n-----END PRIVATE KEY-----\n";
+
+  Future<String?> uploadBase64ImageToDrive(String base64Image) async {
+    try {
+      var credentials = await auth.clientViaServiceAccount(
+        auth.ServiceAccountCredentials(
+          email,
+          auth.ClientId(clientId, null),
+          privateKey,
+        ),
+
+
+        [
+          'https://www.googleapis.com/auth/drive',
+        ],
+      );
+      var client = drive.DriveApi(credentials);
+
+      // Create a new file
+      var newFile = drive.File()
+        ..name = 'image.png'
+        ..parents = ['19WT54oYrXjXyraZ74Zk1pi866btM9P09'];
+
+      // Convert the base64 image to bytes
+      var bytes = base64.decode(base64Image);
+
+      // Upload the file to Google Drive
+      var media = drive.Media(Stream.fromIterable([bytes]), bytes.length);
+      var file = await client.files.create(newFile, uploadMedia: media);
+
+      // Get the link to the file
+      var link = 'https://drive.google.com/file/d/${file.id}/view';
+      print(link);
+      return link;
+    } catch (e) {
+      print('Error uploading image to Google Drive: $e');
+      return null;
+    }
+  }
+
+
   Future<void> scan() async {
     String license;
     // Set the license key depending on the target platform you are building for.
@@ -111,7 +115,6 @@ class _HomePageState extends State<HomePage> {
     for (var result in results) {
       if (result is BlinkIdCombinedRecognizerResult) {
         if (result.mrzResult?.documentType == MrtdDocumentType.Passport) {
-          //UAEIdProvider.resultString = getPassportResultString(result);
           return;
         } else {
           UAEIdProvider.resultString = getIdResultString(result);
@@ -198,8 +201,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> submitData() async {
-
-    saveBase64ToDrive("merna",Base64Decoder().convert(UAEIdProvider.fullDocumentFrontImageBase64),);
+    //uploadBase64ImageToDrive(UAEIdProvider.fullDocumentFrontImageBase64);
     if (_formKey.currentState!.validate()) {
       UserForm userForm = UserForm(
         firstNameController.text,
@@ -209,46 +211,43 @@ class _HomePageState extends State<HomePage> {
         landlineController.text,
         mobileController.text,
         nationalIdController.text,
-        mobileController.text,
-        nationalIdController.text,
+        "https://drive.google.com/file/d/1rGOsfME7Yr2zpjeNf71eIRBQhcBBgG8T/view",
+        uploadBase64ImageToDrive(UAEIdProvider.fullDocumentBackImageBase64) as String,
       );
 
       FormController formController = FormController((String response) {
         print("Response: $response");
         if (response == FormController.STATUS_SUCCESS) {
-          //
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
               "Feedback Submitted",
               textAlign: TextAlign.center,
             ),
-            // backgroundColor: Colors.teal,
             behavior: SnackBarBehavior.floating,
-            shape: const RoundedRectangleBorder(
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(50),
               ),
             ),
-            padding: const EdgeInsets.symmetric(
+            padding: EdgeInsets.symmetric(
               vertical: 10,
             ),
-
             width: 200,
           ));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
               "Feedback Submitteddd",
               textAlign: TextAlign.center,
             ),
             // backgroundColor: Colors.teal,
             behavior: SnackBarBehavior.floating,
-            shape: const RoundedRectangleBorder(
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(50),
               ),
             ),
-            padding: const EdgeInsets.symmetric(
+            padding: EdgeInsets.symmetric(
               vertical: 10,
             ),
 
@@ -256,19 +255,19 @@ class _HomePageState extends State<HomePage> {
           ));
         }
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
           "Submitting Feedback",
           textAlign: TextAlign.center,
         ),
         // backgroundColor: Colors.teal,
         behavior: SnackBarBehavior.floating,
-        shape: const RoundedRectangleBorder(
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
             Radius.circular(50),
           ),
         ),
-        padding: const EdgeInsets.symmetric(
+        padding: EdgeInsets.symmetric(
           vertical: 10,
         ),
 
@@ -286,18 +285,10 @@ class _HomePageState extends State<HomePage> {
 //newypdate
   @override
   Widget build(BuildContext context) {
-    Uint8List bytes = base64.decode(UAEIdProvider.fullDocumentFrontImageBase64);
-    print("merna");
-    print(bytes);
-    print("merna");
-    print(UAEIdProvider.fullDocumentFrontImageBase64 != null);
-
-    print(UAEIdProvider.fullDocumentFrontImageBase64.toString());
-    print(UAEIdProvider.fullDocumentBackImageBase64.toString());
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('ID Scanner'),
+        title: const Text('ID Scanner'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -307,29 +298,28 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Basic Information',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextField(
                   keyboardType: TextInputType.name,
                   controller: firstNameController,
-
-                  decoration: InputDecoration(labelText: 'First Name'),
+                  decoration: const InputDecoration(labelText: 'First Name'),
                 ),
                 TextField(
                   keyboardType: TextInputType.name,
                   controller: lastNameController,
-                  decoration: InputDecoration(labelText: 'Last Name'),
+                  decoration: const InputDecoration(labelText: 'Last Name'),
                 ),
                 TextField(
                   keyboardType: TextInputType.streetAddress,
                   controller: addressController,
-                  decoration: InputDecoration(labelText: 'Address'),
+                  decoration: const InputDecoration(labelText: 'Address'),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 18.0),
+                const Padding(
+                  padding: EdgeInsets.only(top: 18.0),
                   child: Text(
                     'Area',
                     style: TextStyle(
@@ -351,40 +341,41 @@ class _HomePageState extends State<HomePage> {
                       value: value,
                       child: Text(
                         value,
-                        style: TextStyle(fontSize: 18),
+                        style: const TextStyle(fontSize: 18),
                       ),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
                     setState(() {
                       dropdownValue = newValue!;
-                      newValue!=""?
-                      areaController.text = newValue:areaController.text=dropdownValue;
+                      newValue != ""
+                          ? areaController.text = newValue
+                          : areaController.text = dropdownValue;
                     });
                   },
                 ),
                 TextField(
                   keyboardType: TextInputType.phone,
                   controller: landlineController,
-                  decoration: InputDecoration(labelText: 'Landline'),
+                  decoration: const InputDecoration(labelText: 'Landline'),
                 ),
                 TextField(
                   keyboardType: TextInputType.phone,
                   controller: mobileController,
-                  decoration: InputDecoration(labelText: 'Mobile'),
+                  decoration: const InputDecoration(labelText: 'Mobile'),
                 ),
                 TextField(
                   keyboardType: TextInputType.number,
                   maxLength: 13,
                   controller: nationalIdController,
-                  decoration: InputDecoration(labelText: 'National ID'),
+                  decoration: const InputDecoration(labelText: 'National ID'),
                 ),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   'Scan ID Card',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () async => {
                     await scan(),
@@ -394,7 +385,7 @@ class _HomePageState extends State<HomePage> {
                           barrierColor: Colors.black26,
                           context: context,
                           builder: (context) {
-                            return CustomAlertDialog(
+                            return const CustomAlertDialog(
                               title: "Scan Error",
                               description:
                                   "The identity has not been properly identified",
@@ -404,9 +395,9 @@ class _HomePageState extends State<HomePage> {
                       }
                   },
                   // scanFrontID,
-                  child: Text('Scan ID'),
+                  child: const Text('Scan ID'),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Center(
                   child: Column(
                     children: [
@@ -425,10 +416,10 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: submitData,
-                  child: Text('Submit'),
+                  child: const Text('Submit'),
                 ),
               ],
             ),
