@@ -6,11 +6,12 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter/material.dart';
 
-import 'Components/costumAlert.dart';
+import '../Components/costumAlert.dart';
 
-import 'ReadID/UAEIDProvider/uaeIDProvider.dart';
-import 'controller.dart';
-import 'form.dart';
+import '../Components/infromation_text_field.dart';
+import '../model/uaeIDProvider.dart';
+import '../controller/controller.dart';
+import '../model/form.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:googleapis/drive/v3.dart' as drive;
 
@@ -21,9 +22,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isScan = false;
-
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  var email = "taskflutter@taskflutter-392707.iam.gserviceaccount.com";
+  var clientId = "AIzaSyApFxW-Q7Nao3fc_r2r2bCp7cajnlkyE6s";
+  var privateKey = "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPeE7CaVIMFwGx\nyjpLjIVjPUdS/MweBDFqF0M54bDkQPZKyZH/ej+lmKzVYaqj9OKtBJ6LQ7Zw3Fwj\nChGpdGw0HnmgDFk3yEOut8547J4MAgAxJU7zB0cl9N9ZuYmCmVGnocmOBIG5M+jc\nLF77JD19x3acKmpH6Wxb/k5PlM5LkOiliPTtj7swXxW+xQjUTqee9ZW29RrrGFe+\n+zSi5f4IMBkIS/IpiQ96bzSrQ4yYABrRBZugEZgalVJOXTRnwgZvyBMQWaXd/dmG\n0dk1CB9xstvtTHasuPym7CZ9m0TJ/fWmVL1ZQSqoa/nc12DzeMLPGRJZD0QBESlc\nmI6rb9GXAgMBAAECggEAFeYPfiLKx77n7WG4nH/VFoAB1scbLnHn21hgPqxNVRJs\nTMGQ+QPo0uxWFeHMtqijAnsx1uZLTAdebE5kRdwljazHzrZu9l3bkwYQs5/aIM9X\nQNi8yBc1EdMSfjCAzLmtLkH7+dMM9ET/57mBPwX4vZ1/rgUmGbgQOXeSwYCl88DD\nqYqg3iGYtIUlGhobd+jKhzh07B/wHAsOcQ/0k2tl3hI6hxZ2ENtFWAxX/ncsDUzY\nEx32Aq42yiIhHwefBbQw4K7p6uHMiW+1gJS8cgPuM3/n9znGM1g/Ywv2wzZSebnK\nPpbBvTdfxLlZOHzKGL2qz7HyX9XRifw8XMVzEYm8sQKBgQD0Wyx5XyANaTkvBaQ/\nsu66b6sZQQ3WmBkHtElPfzhIgPpFob5BVaHJdlprq0VOkbilqUSHjpcGDpPwj6f+\nsdE5B9Iawhzbb7T62OvthUAWaimWJjxxC5tex25h2eKAQoywSThMgwj81rk/i1CW\nGMCjjtlBo/ocwTBwlpugQZ6wsQKBgQDZWyuiz9R5nIVW3ZKjDIejUTDCt2l4LCuT\nBWgYycBGuoSJik2f+j/TQxkhycoUViU2NPIzhP1bPorRjrfyShL50eJe5fErMmpw\nIHu59SgeEiKKcLcKO36pGAtdwH30p9nt9M4e3bDXwR1LD6vQvMnwdcCxDjCUofmK\nfsFfnrn4xwKBgQCvzbTmscDOxUimAwoT5jmJmvPfnIVHQnCnsVcZQe+NgnYNiPvn\n56MZ3fPaCQQ5LfBKB8lNOhKAAhb/+WslfGuJ+413QPcgDXOJEm5Tmg3s0n6PD31m\n27Hx88v/zJIAM2EjJ9rAeXoK5rWq+SGGi9J1Gj5G0qIM9BVUu5bGKs/wUQKBgQDW\nN/vev/SKUxA7l68hEYVRGgDzt660KNxdT1PUMmtVihh8MhnlVM+42IWZfnay6mBM\nd4xJ6IWHezF37bAvlH/1Rb1UiE3TpCGxFuK6WPvL/1WZmhNce1yPLUpugPvit9ea\npc7MLvRPAF5tjyloVdi1LGjYV8LbinQV4m2VXyutGwKBgGqOk59ZnRr4fI+O4UjJ\n65nNKtn5iPoDjrLfqo933/282eWCgNNWfEQGRPp5lk+sxUVBFYLNyqNIM3z1RUKF\nXJMs68nthqMUWGMPvcNI+lCZin05BVbTKYJx9tdkFhC34gOfkScHtyWYMnW+og4H\nEE9c9pNC2h44FIMy9hogO9mm\n-----END PRIVATE KEY-----\n";
+  String dropdownValue = 'Zamalek';
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
   TextEditingController addressController = TextEditingController();
@@ -31,18 +35,7 @@ class _HomePageState extends State<HomePage> {
   TextEditingController landlineController = TextEditingController();
   TextEditingController mobileController = TextEditingController();
   TextEditingController nationalIdController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    Firebase.initializeApp();
-  }
-
-  var email = "taskflutter@taskflutter-392707.iam.gserviceaccount.com";
-  var clientId = "AIzaSyApFxW-Q7Nao3fc_r2r2bCp7cajnlkyE6s";
-  var privateKey = "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDPeE7CaVIMFwGx\nyjpLjIVjPUdS/MweBDFqF0M54bDkQPZKyZH/ej+lmKzVYaqj9OKtBJ6LQ7Zw3Fwj\nChGpdGw0HnmgDFk3yEOut8547J4MAgAxJU7zB0cl9N9ZuYmCmVGnocmOBIG5M+jc\nLF77JD19x3acKmpH6Wxb/k5PlM5LkOiliPTtj7swXxW+xQjUTqee9ZW29RrrGFe+\n+zSi5f4IMBkIS/IpiQ96bzSrQ4yYABrRBZugEZgalVJOXTRnwgZvyBMQWaXd/dmG\n0dk1CB9xstvtTHasuPym7CZ9m0TJ/fWmVL1ZQSqoa/nc12DzeMLPGRJZD0QBESlc\nmI6rb9GXAgMBAAECggEAFeYPfiLKx77n7WG4nH/VFoAB1scbLnHn21hgPqxNVRJs\nTMGQ+QPo0uxWFeHMtqijAnsx1uZLTAdebE5kRdwljazHzrZu9l3bkwYQs5/aIM9X\nQNi8yBc1EdMSfjCAzLmtLkH7+dMM9ET/57mBPwX4vZ1/rgUmGbgQOXeSwYCl88DD\nqYqg3iGYtIUlGhobd+jKhzh07B/wHAsOcQ/0k2tl3hI6hxZ2ENtFWAxX/ncsDUzY\nEx32Aq42yiIhHwefBbQw4K7p6uHMiW+1gJS8cgPuM3/n9znGM1g/Ywv2wzZSebnK\nPpbBvTdfxLlZOHzKGL2qz7HyX9XRifw8XMVzEYm8sQKBgQD0Wyx5XyANaTkvBaQ/\nsu66b6sZQQ3WmBkHtElPfzhIgPpFob5BVaHJdlprq0VOkbilqUSHjpcGDpPwj6f+\nsdE5B9Iawhzbb7T62OvthUAWaimWJjxxC5tex25h2eKAQoywSThMgwj81rk/i1CW\nGMCjjtlBo/ocwTBwlpugQZ6wsQKBgQDZWyuiz9R5nIVW3ZKjDIejUTDCt2l4LCuT\nBWgYycBGuoSJik2f+j/TQxkhycoUViU2NPIzhP1bPorRjrfyShL50eJe5fErMmpw\nIHu59SgeEiKKcLcKO36pGAtdwH30p9nt9M4e3bDXwR1LD6vQvMnwdcCxDjCUofmK\nfsFfnrn4xwKBgQCvzbTmscDOxUimAwoT5jmJmvPfnIVHQnCnsVcZQe+NgnYNiPvn\n56MZ3fPaCQQ5LfBKB8lNOhKAAhb/+WslfGuJ+413QPcgDXOJEm5Tmg3s0n6PD31m\n27Hx88v/zJIAM2EjJ9rAeXoK5rWq+SGGi9J1Gj5G0qIM9BVUu5bGKs/wUQKBgQDW\nN/vev/SKUxA7l68hEYVRGgDzt660KNxdT1PUMmtVihh8MhnlVM+42IWZfnay6mBM\nd4xJ6IWHezF37bAvlH/1Rb1UiE3TpCGxFuK6WPvL/1WZmhNce1yPLUpugPvit9ea\npc7MLvRPAF5tjyloVdi1LGjYV8LbinQV4m2VXyutGwKBgGqOk59ZnRr4fI+O4UjJ\n65nNKtn5iPoDjrLfqo933/282eWCgNNWfEQGRPp5lk+sxUVBFYLNyqNIM3z1RUKF\nXJMs68nthqMUWGMPvcNI+lCZin05BVbTKYJx9tdkFhC34gOfkScHtyWYMnW+og4H\nEE9c9pNC2h44FIMy9hogO9mm\n-----END PRIVATE KEY-----\n";
-
-  Future<String?> uploadBase64ImageToDrive(String base64Image) async {
+  Future<String> uploadBase64ImageToDrive(String base64Image) async {
     try {
       var credentials = await auth.clientViaServiceAccount(
         auth.ServiceAccountCredentials(
@@ -73,14 +66,13 @@ class _HomePageState extends State<HomePage> {
       // Get the link to the file
       var link = 'https://drive.google.com/file/d/${file.id}/view';
       print(link);
+
       return link;
     } catch (e) {
       print('Error uploading image to Google Drive: $e');
-      return null;
+      return " ";
     }
   }
-
-
   Future<void> scan() async {
     String license;
     // Set the license key depending on the target platform you are building for.
@@ -138,12 +130,8 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
-
-  Map<String, dynamic> getIdResultString(
-      BlinkIdCombinedRecognizerResult result) {
+  Map<String, dynamic> getIdResultString(BlinkIdCombinedRecognizerResult result) {
     // The information below will be otained from the natioal id if they are available.
-    // In the case a field is not found, then it is skipped. For example, some national ids do not have the profession field.
-
     return {
       "Full name": result.fullName != ''
           ? buildResult(result.fullName)
@@ -165,9 +153,9 @@ class _HomePageState extends State<HomePage> {
           : result.mrzResult!.mrzVerified!
               ? buildResult(result.mrzResult!.nationality)
               : '',
-      "Date of birth": buildDateResult(result.dateOfBirth),
-      "Age": buildIntResult(result.age),
-      "Date of expiry": buildDateResult(result.dateOfExpiry),
+      // "Date of birth": buildDateResult(result.dateOfBirth),
+      // "Age": buildIntResult(result.age),
+      // "Date of expiry": buildDateResult(result.dateOfExpiry),
       "Date of expiry permanent":
           buildResult(result.dateOfExpiryPermanent.toString()),
       "Personal Id Number": result.personalIdNumber != ''
@@ -178,7 +166,6 @@ class _HomePageState extends State<HomePage> {
       "Text": result.mrzResult!.mrzVerified! ? result.mrzResult!.mrzText : '',
     };
   }
-
   String buildResult(String? result) {
     if (result == null || result.isEmpty) {
       return "";
@@ -186,22 +173,9 @@ class _HomePageState extends State<HomePage> {
     return result.replaceAll('\n', ' ');
   }
 
-  String buildDateResult(Date? result) {
-    if (result == null || result.year == 0) {
-      return "";
-    }
-    return buildResult("${result.day}.${result.month}.${result.year}");
-  }
 
-  String buildIntResult(int? result) {
-    if (result == null || result < 0) {
-      return "";
-    }
-    return buildResult(result.toString());
-  }
 
   Future<void> submitData() async {
-    //uploadBase64ImageToDrive(UAEIdProvider.fullDocumentFrontImageBase64);
     if (_formKey.currentState!.validate()) {
       UserForm userForm = UserForm(
         firstNameController.text,
@@ -211,8 +185,8 @@ class _HomePageState extends State<HomePage> {
         landlineController.text,
         mobileController.text,
         nationalIdController.text,
-        "https://drive.google.com/file/d/1rGOsfME7Yr2zpjeNf71eIRBQhcBBgG8T/view",
-        uploadBase64ImageToDrive(UAEIdProvider.fullDocumentBackImageBase64) as String,
+        await uploadBase64ImageToDrive(UAEIdProvider.fullDocumentFrontImageBase64) ,
+        await uploadBase64ImageToDrive(UAEIdProvider.fullDocumentBackImageBase64) ,
       );
 
       FormController formController = FormController((String response) {
@@ -220,7 +194,7 @@ class _HomePageState extends State<HomePage> {
         if (response == FormController.STATUS_SUCCESS) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
-              "Feedback Submitted",
+              "Saved SUCCESS",
               textAlign: TextAlign.center,
             ),
             behavior: SnackBarBehavior.floating,
@@ -232,57 +206,20 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.symmetric(
               vertical: 10,
             ),
-            width: 200,
-          ));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-              "Feedback Submitteddd",
-              textAlign: TextAlign.center,
-            ),
-            // backgroundColor: Colors.teal,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(50),
-              ),
-            ),
-            padding: EdgeInsets.symmetric(
-              vertical: 10,
-            ),
-
             width: 200,
           ));
         }
+
       });
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          "Submitting Feedback",
-          textAlign: TextAlign.center,
-        ),
-        // backgroundColor: Colors.teal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(50),
-          ),
-        ),
-        padding: EdgeInsets.symmetric(
-          vertical: 10,
-        ),
 
-        width: 200,
-      ));
-
-      // Submit 'feedbackForm' and save it in Google Sheet
 
       formController.submitForm(userForm);
     }
   }
 
-  String dropdownValue = 'Zamalek';
 
-//newypdate
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -303,20 +240,30 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  keyboardType: TextInputType.name,
+
+                CustomTxtFieldProfile(
+                  txtInputType: TextInputType.name ,
                   controller: firstNameController,
-                  decoration: const InputDecoration(labelText: 'First Name'),
+                  hintTxt: 'First Name',
+                  validator: (val) {
+                    return val != '' ? null : "EnterValidName";
+                  },
                 ),
-                TextField(
-                  keyboardType: TextInputType.name,
+                CustomTxtFieldProfile(
+                  txtInputType: TextInputType.name ,
                   controller: lastNameController,
-                  decoration: const InputDecoration(labelText: 'Last Name'),
+                  hintTxt: 'Last Name',
+                  validator: (val) {
+                    return val != '' ? null : "EnterValidName";
+                  },
                 ),
-                TextField(
-                  keyboardType: TextInputType.streetAddress,
+                CustomTxtFieldProfile(
+                  txtInputType: TextInputType.streetAddress ,
                   controller: addressController,
-                  decoration: const InputDecoration(labelText: 'Address'),
+                  hintTxt: 'Address',
+                  validator: (val) {
+                    return val != '' ? null : "EnterValidAddress";
+                  },
                 ),
                 const Padding(
                   padding: EdgeInsets.only(top: 18.0),
@@ -354,19 +301,26 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                 ),
-                TextField(
-                  keyboardType: TextInputType.phone,
+                CustomTxtFieldProfile(
+                  txtInputType: TextInputType.phone ,
                   controller: landlineController,
-                  decoration: const InputDecoration(labelText: 'Landline'),
+                  hintTxt: 'Landline',
+                  validator: (val) {
+                    return val != '' ? null : "EnterValidLandline";
+                  },
                 ),
-                TextField(
-                  keyboardType: TextInputType.phone,
+                CustomTxtFieldProfile(
+                  txtInputType: TextInputType.phone ,
                   controller: mobileController,
-                  decoration: const InputDecoration(labelText: 'Mobile'),
+                  hintTxt: 'Mobile',
+                  validator: (val) {
+                    return val != '' ? null : "EnterValidMobile";
+                  },
                 ),
+
                 TextField(
                   keyboardType: TextInputType.number,
-                  maxLength: 13,
+                  maxLength: 14,
                   controller: nationalIdController,
                   decoration: const InputDecoration(labelText: 'National ID'),
                 ),
@@ -388,11 +342,13 @@ class _HomePageState extends State<HomePage> {
                             return const CustomAlertDialog(
                               title: "Scan Error",
                               description:
-                                  "The identity has not been properly identified",
+                              "The identity has not been properly identified",
                             );
                           },
                         )
                       }
+
+
                   },
                   // scanFrontID,
                   child: const Text('Scan ID'),
@@ -418,7 +374,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: submitData,
+                    onPressed: submitData,
+
                   child: const Text('Submit'),
                 ),
               ],

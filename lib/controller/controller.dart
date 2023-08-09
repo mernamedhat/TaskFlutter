@@ -2,7 +2,7 @@ import 'dart:convert' as convert;
 
 import 'package:http/http.dart' as http;
 
-import 'form.dart';
+import '../model/form.dart';
 
 
 class FormController {
